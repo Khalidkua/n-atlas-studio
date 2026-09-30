@@ -1,16 +1,17 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 
-from app.providers.mock import MockProvider
+from app.core.config import settings
+from app.providers.factory import create_provider
 
 
 app = FastAPI(
-    title="N-ATLAS Studio",
+    title=settings.app_name,
     description="Developer and evaluation platform for N-ATLaS",
-    version="0.1.0",
+    version=settings.app_version,
 )
 
-provider = MockProvider()
+provider = create_provider()
 
 
 class GenerateRequest(BaseModel):
@@ -24,9 +25,11 @@ class ChatRequest(BaseModel):
 @app.get("/")
 def root():
     return {
-        "name": "N-ATLAS Studio",
-        "version": "0.1.0",
+        "name": settings.app_name,
+        "version": settings.app_version,
         "status": "running",
+        "provider": settings.provider,
+        "model": settings.model_name,
     }
 
 
@@ -39,7 +42,8 @@ def health():
 def generate(request: GenerateRequest):
     return {
         "response": provider.generate(request.prompt),
-        "provider": "mock",
+        "provider": settings.provider,
+        "model": settings.model_name,
     }
 
 
@@ -47,5 +51,6 @@ def generate(request: GenerateRequest):
 def chat(request: ChatRequest):
     return {
         "response": provider.chat(request.messages),
-        "provider": "mock",
+        "provider": settings.provider,
+        "model": settings.model_name,
     }
