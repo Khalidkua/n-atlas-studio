@@ -1,8 +1,11 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
+from app.services.experiment_store import ExperimentStore
 
 from app.core.config import settings
 from app.providers.factory import create_provider
+from app.services.dataset_loader import DatasetLoader
+from app.services.evaluation_engine import EvaluationEngine
 
 
 app = FastAPI(
@@ -20,6 +23,10 @@ class GenerateRequest(BaseModel):
 
 class ChatRequest(BaseModel):
     messages: list[dict[str, str]]
+
+
+class EvaluateRequest(BaseModel):
+    dataset_path: str
 
 
 @app.get("/")
@@ -54,3 +61,18 @@ def chat(request: ChatRequest):
         "provider": settings.provider,
         "model": settings.model_name,
     }
+
+
+@app.post("/evaluate")
+def evaluate(request: EvaluateRequest):
+    dataset = DatasetLoader.load_jsonl(
+        request.dataset_path
+    )
+
+    engine = EvaluationEngine(provider)
+
+    report = engine.evaluate(dataset)
+
+    store = ExperimentStore()
+
+    return store.save(report)

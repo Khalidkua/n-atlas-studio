@@ -1,0 +1,39 @@
+import json
+from datetime import datetime, timezone
+from pathlib import Path
+from uuid import uuid4
+
+from app.core.config import settings
+
+
+class ExperimentStore:
+    """Persist evaluation runs as JSON files."""
+
+    def __init__(self, directory: str = "experiments"):
+        self.directory = Path(directory)
+        self.directory.mkdir(parents=True, exist_ok=True)
+
+    def save(self, report: dict) -> dict:
+        run_id = str(uuid4())
+
+        experiment = {
+            "run_id": run_id,
+            "timestamp": datetime.now(
+                timezone.utc
+            ).isoformat(),
+            "provider": settings.provider,
+            "model": settings.model_name,
+            **report,
+        }
+
+        file_path = self.directory / f"{run_id}.json"
+
+        with file_path.open("w", encoding="utf-8") as file:
+            json.dump(
+                experiment,
+                file,
+                indent=2,
+                ensure_ascii=False,
+            )
+
+        return experiment
