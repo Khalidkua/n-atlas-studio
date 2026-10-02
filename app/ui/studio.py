@@ -886,6 +886,55 @@ elif page == "Compare Experiments":
                     "Comparison"
                 )
 
+                experiment_a = response.get(
+                    "experiment_a",
+                    {},
+                )
+
+                experiment_b = response.get(
+                    "experiment_b",
+                    {},
+                )
+
+                st.write(
+                    "### Experiment Configuration"
+                )
+
+                config_data = {
+                    "Property": [
+                        "Run ID",
+                        "Dataset",
+                        "Provider",
+                        "Model",
+                        "Temperature",
+                        "Max Tokens",
+                        "Languages",
+                        "Task Types",
+                    ],
+                    "Experiment A": [
+                        experiment_a.get("run_id", "Unknown"),
+                        experiment_a.get("dataset", "Unknown"),
+                        experiment_a.get("provider", "Unknown"),
+                        experiment_a.get("model", "Unknown"),
+                        experiment_a.get("temperature", 0.7),
+                        experiment_a.get("max_tokens", 512),
+                        ", ".join(experiment_a.get("languages", [])) or "All",
+                        ", ".join(experiment_a.get("task_types", [])) or "All",
+                    ],
+                    "Experiment B": [
+                        experiment_b.get("run_id", "Unknown"),
+                        experiment_b.get("dataset", "Unknown"),
+                        experiment_b.get("provider", "Unknown"),
+                        experiment_b.get("model", "Unknown"),
+                        experiment_b.get("temperature", 0.7),
+                        experiment_b.get("max_tokens", 512),
+                        ", ".join(experiment_b.get("languages", [])) or "All",
+                        ", ".join(experiment_b.get("task_types", [])) or "All",
+                    ],
+                }
+
+                st.table(config_data)
+
                 metrics = response.get(
                     "metrics",
                     {},
