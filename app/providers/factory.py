@@ -1,5 +1,6 @@
 from app.core.config import settings
 from app.providers.base import NAtlasProvider
+from app.providers.gradio import GradioNAtlasProvider
 from app.providers.mock import MockProvider
 from app.providers.remote import RemoteNAtlasProvider
 
@@ -19,6 +20,12 @@ def create_provider() -> NAtlasProvider:
             model_name=settings.model_name,
             chat_url=settings.remote_chat_url,
             generate_url=settings.remote_generate_url,
+        )
+
+    if provider_name == "gradio":
+        return GradioNAtlasProvider(
+            space=settings.gradio_space,
+            model_key=settings.gradio_model_key,
         )
 
     raise ValueError(

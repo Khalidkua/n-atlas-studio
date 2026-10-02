@@ -11,6 +11,10 @@ class Settings(BaseSettings):
     provider: str = "mock"
     model_name: str = "NCAIR1/N-ATLaS"
 
+    # Gradio N-ATLaS configuration
+    gradio_space: str = "seun-ajayi/n-atlas-evaluations"
+    gradio_model_key: str = "N-ATLaS-LLM"
+
     # Remote inference configuration
     remote_api_url: str = ""
     remote_api_key: str = ""
