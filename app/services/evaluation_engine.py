@@ -20,7 +20,25 @@ class EvaluationEngine:
         dataset: EvaluationDataset,
         temperature: float = 0.7,
         max_tokens: int = 512,
+        languages: list[str] | None = None,
+        task_types: list[str] | None = None,
     ) -> dict[str, Any]:
+
+        languages = languages or []
+        task_types = task_types or []
+
+        filtered_examples = [
+            example
+            for example in dataset.examples
+            if (
+                not languages
+                or example.language in languages
+            )
+            and (
+                not task_types
+                or example.task_type in task_types
+            )
+        ]
 
         results = []
 
@@ -51,7 +69,7 @@ class EvaluationEngine:
             }
         )
 
-        for example in dataset.examples:
+        for example in filtered_examples:
 
             generated_answer = self.provider.generate(
                 example.prompt,
@@ -232,6 +250,8 @@ class EvaluationEngine:
             "total_examples": total,
             "temperature": temperature,
             "max_tokens": max_tokens,
+            "languages": languages,
+            "task_types": task_types,
             "metrics": {
                 "exact_match": average_exact_match,
                 "word_overlap": average_word_overlap,

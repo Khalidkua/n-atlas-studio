@@ -299,6 +299,44 @@ elif page == "Evaluation Lab":
             "Generation settings for this evaluation run."
         )
 
+        st.subheader(
+            "Evaluation Filters"
+        )
+
+        filter_col1, filter_col2 = st.columns(2)
+
+        available_languages = selected_info.get(
+            "languages",
+            [],
+        )
+
+        available_task_types = selected_info.get(
+            "task_types",
+            [],
+        )
+
+        with filter_col1:
+
+            selected_languages = st.multiselect(
+                "Languages",
+                options=available_languages,
+                default=available_languages,
+                key="evaluation_languages",
+            )
+
+        with filter_col2:
+
+            selected_task_types = st.multiselect(
+                "Task Types",
+                options=available_task_types,
+                default=available_task_types,
+                key="evaluation_task_types",
+            )
+
+        st.caption(
+            "Select the languages and task types to include in this evaluation run."
+        )
+
         info_col1, info_col2, info_col3 = st.columns(3)
 
         with info_col1:
@@ -360,6 +398,8 @@ elif page == "Evaluation Lab":
     ],
     "temperature": evaluation_temperature,
     "max_tokens": evaluation_max_tokens,
+    "languages": selected_languages,
+    "task_types": selected_task_types,
 },
                     )
 

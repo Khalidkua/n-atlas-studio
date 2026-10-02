@@ -33,6 +33,8 @@ class EvaluateRequest(BaseModel):
     dataset_path: str
     temperature: float = 0.7
     max_tokens: int = 512
+    languages: list[str] = []
+    task_types: list[str] = []
 
 @app.get("/")
 def root():
@@ -90,10 +92,12 @@ def evaluate(request: EvaluateRequest):
     engine = EvaluationEngine(provider)
 
     report = engine.evaluate(
-    dataset,
-    temperature=request.temperature,
-    max_tokens=request.max_tokens,
-)
+        dataset,
+        temperature=request.temperature,
+        max_tokens=request.max_tokens,
+        languages=request.languages,
+        task_types=request.task_types,
+    )
 
     store = ExperimentStore()
 
