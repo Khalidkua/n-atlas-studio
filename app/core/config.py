@@ -14,6 +14,8 @@ class Settings(BaseSettings):
     # Remote inference configuration
     remote_api_url: str = ""
     remote_api_key: str = ""
+    remote_chat_url: str = ""
+    remote_generate_url: str = ""
 
     model_config = SettingsConfigDict(
         env_file=".env",

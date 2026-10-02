@@ -17,6 +17,8 @@ def create_provider() -> NAtlasProvider:
             api_url=settings.remote_api_url,
             api_key=settings.remote_api_key,
             model_name=settings.model_name,
+            chat_url=settings.remote_chat_url,
+            generate_url=settings.remote_generate_url,
         )
 
     raise ValueError(
