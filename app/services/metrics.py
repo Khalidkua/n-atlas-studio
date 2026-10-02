@@ -39,3 +39,26 @@ def word_overlap_score(
     overlap = generated_words.intersection(reference_words)
 
     return len(overlap) / len(reference_words)
+
+def word_count(text: str) -> int:
+    """Return the number of normalized whitespace-separated words."""
+    normalized = normalize_text(text)
+
+    if not normalized:
+        return 0
+
+    return len(normalized.split())
+
+
+def length_ratio(
+    generated: str,
+    reference: str,
+) -> float:
+    """Return generated word count divided by reference word count."""
+    reference_count = word_count(reference)
+
+    if reference_count == 0:
+        return 0.0
+
+    return word_count(generated) / reference_count
+

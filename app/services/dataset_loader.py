@@ -12,6 +12,10 @@ REQUIRED_FIELDS = {
     "reference_answer",
 }
 
+OPTIONAL_FIELDS = {
+    "task_type",
+}
+
 
 class DatasetLoader:
     """Load and validate N-ATLAS Studio evaluation datasets."""

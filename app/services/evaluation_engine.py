@@ -6,6 +6,8 @@ from app.providers.base import NAtlasProvider
 from app.services.metrics import (
     exact_match_score,
     word_overlap_score,
+    word_count,
+    length_ratio,
 )
 
 
@@ -44,12 +46,14 @@ class EvaluationEngine:
 
         exact_match_total = 0.0
         word_overlap_total = 0.0
+        length_ratio_total = 0.0
 
         language_metrics = defaultdict(
             lambda: {
                 "examples": 0,
                 "exact_match_total": 0.0,
                 "word_overlap_total": 0.0,
+                "length_ratio_total": 0.0,
             }
         )
 
@@ -58,6 +62,7 @@ class EvaluationEngine:
                 "examples": 0,
                 "exact_match_total": 0.0,
                 "word_overlap_total": 0.0,
+                "length_ratio_total": 0.0,
             }
         )
 
@@ -66,6 +71,7 @@ class EvaluationEngine:
                 "examples": 0,
                 "exact_match_total": 0.0,
                 "word_overlap_total": 0.0,
+                "length_ratio_total": 0.0,
             }
         )
 
@@ -87,8 +93,22 @@ class EvaluationEngine:
                 example.reference_answer,
             )
 
+            generated_word_count = word_count(
+                generated_answer
+            )
+
+            reference_word_count = word_count(
+                example.reference_answer
+            )
+
+            answer_length_ratio = length_ratio(
+                generated_answer,
+                example.reference_answer,
+            )
+
             exact_match_total += exact_match
             word_overlap_total += word_overlap
+            length_ratio_total += answer_length_ratio
 
             # -----------------------------------------
             # Language metrics
@@ -106,6 +126,10 @@ class EvaluationEngine:
                 "word_overlap_total"
             ] += word_overlap
 
+            language_metrics[language][
+                "length_ratio_total"
+            ] += answer_length_ratio
+
             # -----------------------------------------
             # Domain metrics
             # -----------------------------------------
@@ -121,6 +145,10 @@ class EvaluationEngine:
             domain_metrics[domain][
                 "word_overlap_total"
             ] += word_overlap
+
+            domain_metrics[domain][
+                "length_ratio_total"
+            ] += answer_length_ratio
 
             # -----------------------------------------
             # Task type metrics
@@ -138,6 +166,10 @@ class EvaluationEngine:
                 "word_overlap_total"
             ] += word_overlap
 
+            task_metrics[task_type][
+                "length_ratio_total"
+            ] += answer_length_ratio
+
             # -----------------------------------------
             # Individual result
             # -----------------------------------------
@@ -154,6 +186,9 @@ class EvaluationEngine:
                     "metrics": {
                         "exact_match": exact_match,
                         "word_overlap": word_overlap,
+                        "generated_word_count": generated_word_count,
+                        "reference_word_count": reference_word_count,
+                        "length_ratio": answer_length_ratio,
                     },
                 }
             )
@@ -169,9 +204,14 @@ class EvaluationEngine:
                 word_overlap_total / total
             )
 
+            average_length_ratio = (
+                length_ratio_total / total
+            )
+
         else:
             average_exact_match = 0.0
             average_word_overlap = 0.0
+            average_length_ratio = 0.0
 
         # -----------------------------------------
         # Final language metrics
@@ -192,6 +232,11 @@ class EvaluationEngine:
                 ),
                 "word_overlap": (
                     metrics["word_overlap_total"] / count
+                    if count
+                    else 0.0
+                ),
+                "length_ratio": (
+                    metrics["length_ratio_total"] / count
                     if count
                     else 0.0
                 ),
@@ -219,6 +264,11 @@ class EvaluationEngine:
                     if count
                     else 0.0
                 ),
+                "length_ratio": (
+                    metrics["length_ratio_total"] / count
+                    if count
+                    else 0.0
+                ),
             }
 
         # -----------------------------------------
@@ -243,6 +293,11 @@ class EvaluationEngine:
                     if count
                     else 0.0
                 ),
+                "length_ratio": (
+                    metrics["length_ratio_total"] / count
+                    if count
+                    else 0.0
+                ),
             }
 
         return {
@@ -255,6 +310,7 @@ class EvaluationEngine:
             "metrics": {
                 "exact_match": average_exact_match,
                 "word_overlap": average_word_overlap,
+                "length_ratio": average_length_ratio,
             },
             "by_language": by_language,
             "by_task_type": by_task_type,

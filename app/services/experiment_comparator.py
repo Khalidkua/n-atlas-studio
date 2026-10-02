@@ -19,6 +19,9 @@ class ExperimentComparator:
         overlap_a = metrics_a.get("word_overlap", 0.0)
         overlap_b = metrics_b.get("word_overlap", 0.0)
 
+        length_a = metrics_a.get("length_ratio", 0.0)
+        length_b = metrics_b.get("length_ratio", 0.0)
+
         return {
             "experiment_a": {
                 "run_id": experiment_a.get("run_id"),
@@ -50,6 +53,11 @@ class ExperimentComparator:
                     "experiment_a": overlap_a,
                     "experiment_b": overlap_b,
                     "difference": overlap_b - overlap_a,
+                },
+                "length_ratio": {
+                    "experiment_a": length_a,
+                    "experiment_b": length_b,
+                    "difference": length_b - length_a,
                 },
             },
         }

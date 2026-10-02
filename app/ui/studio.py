@@ -411,7 +411,7 @@ elif page == "Evaluation Lab":
                         "Evaluation Summary"
                     )
 
-                    col1, col2, col3 = st.columns(3)
+                    col1, col2, col3, col4 = st.columns(4)
 
                     with col1:
 
@@ -434,6 +434,13 @@ elif page == "Evaluation Lab":
                         st.metric(
                             "Word Overlap",
                             f"{response['metrics']['word_overlap']:.2%}",
+                        )
+
+                    with col4:
+
+                        st.metric(
+                            "Length Ratio",
+                            f"{response['metrics'].get('length_ratio', 0.0):.2f}x",
                         )
 
 
@@ -490,8 +497,11 @@ elif page == "Evaluation Lab":
                                 "prompt",
                                 "reference_answer",
                                 "generated_answer",
+                                "generated_word_count",
+                                "reference_word_count",
                                 "exact_match",
                                 "word_overlap",
+                                "length_ratio",
                             ],
                         )
 
@@ -513,6 +523,20 @@ elif page == "Evaluation Lab":
                                         "generated_answer",
                                         "",
                                     ),
+                                    "generated_word_count": result.get(
+                                        "metrics",
+                                        {},
+                                    ).get(
+                                        "generated_word_count",
+                                        0,
+                                    ),
+                                    "reference_word_count": result.get(
+                                        "metrics",
+                                        {},
+                                    ).get(
+                                        "reference_word_count",
+                                        0,
+                                    ),
                                     "exact_match": result.get(
                                         "metrics",
                                         {},
@@ -525,6 +549,13 @@ elif page == "Evaluation Lab":
                                         {},
                                     ).get(
                                         "word_overlap",
+                                        0.0,
+                                    ),
+                                    "length_ratio": result.get(
+                                        "metrics",
+                                        {},
+                                    ).get(
+                                        "length_ratio",
                                         0.0,
                                     ),
                                 }
@@ -801,7 +832,7 @@ elif page == "Evaluation Lab":
                                 result["generated_answer"]
                             )
 
-                            metric_col1, metric_col2 = st.columns(2)
+                            metric_col1, metric_col2, metric_col3, metric_col4, metric_col5 = st.columns(5)
 
                             with metric_col1:
 
@@ -815,6 +846,33 @@ elif page == "Evaluation Lab":
                                 st.metric(
                                     "Word Overlap",
                                     f"{result['metrics']['word_overlap']:.2%}",
+                                )
+
+                            with metric_col3:
+
+                                st.metric(
+                                    "Generated Words",
+                                    result["metrics"].get(
+                                        "generated_word_count",
+                                        0,
+                                    ),
+                                )
+
+                            with metric_col4:
+
+                                st.metric(
+                                    "Reference Words",
+                                    result["metrics"].get(
+                                        "reference_word_count",
+                                        0,
+                                    ),
+                                )
+
+                            with metric_col5:
+
+                                st.metric(
+                                    "Length Ratio",
+                                    f"{result['metrics'].get('length_ratio', 0.0):.2f}x",
                                 )
 
                 except Exception as exc:
@@ -1047,6 +1105,11 @@ elif page == "Compare Experiments":
                     {},
                 )
 
+                length = metrics.get(
+                    "length_ratio",
+                    {},
+                )
+
                 st.write(
                     "### Exact Match"
                 )
@@ -1105,6 +1168,34 @@ elif page == "Compare Experiments":
 
 
                 st.write(
+                    "### Length Ratio"
+                )
+
+                col1, col2, col3 = st.columns(3)
+
+                with col1:
+
+                    st.metric(
+                        "Experiment A",
+                        f"{length.get('experiment_a', 0.0):.2f}x",
+                    )
+
+                with col2:
+
+                    st.metric(
+                        "Experiment B",
+                        f"{length.get('experiment_b', 0.0):.2f}x",
+                    )
+
+                with col3:
+
+                    st.metric(
+                        "Difference",
+                        f"{length.get('difference', 0.0):+.2f}x",
+                    )
+
+
+                st.write(
                     "### Metric Comparison"
                 )
 
@@ -1112,14 +1203,17 @@ elif page == "Compare Experiments":
                     "Metric": [
                         "Exact Match",
                         "Word Overlap",
+                        "Length Ratio",
                     ],
                     "Experiment A": [
                         exact.get("experiment_a", 0.0),
                         overlap.get("experiment_a", 0.0),
+                        length.get("experiment_a", 0.0),
                     ],
                     "Experiment B": [
                         exact.get("experiment_b", 0.0),
                         overlap.get("experiment_b", 0.0),
+                        length.get("experiment_b", 0.0),
                     ],
                 }
 
