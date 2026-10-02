@@ -446,6 +446,103 @@ elif page == "Evaluation Lab":
                         language="text",
                     )
 
+                    st.subheader(
+                        "Export Evaluation"
+                    )
+
+                    export_col1, export_col2 = st.columns(2)
+
+                    json_export = json.dumps(
+                        response,
+                        indent=2,
+                        ensure_ascii=False,
+                    )
+
+                    with export_col1:
+                        st.download_button(
+                            "Download JSON",
+                            data=json_export,
+                            file_name=(
+                                f"evaluation_"
+                                f"{response['run_id']}.json"
+                            ),
+                            mime="application/json",
+                        )
+
+                    csv_rows = response.get(
+                        "results",
+                        [],
+                    )
+
+                    if csv_rows:
+                        import csv
+                        from io import StringIO
+
+                        csv_buffer = StringIO()
+
+                        csv_writer = csv.DictWriter(
+                            csv_buffer,
+                            fieldnames=[
+                                "id",
+                                "language",
+                                "domain",
+                                "task_type",
+                                "prompt",
+                                "reference_answer",
+                                "generated_answer",
+                                "exact_match",
+                                "word_overlap",
+                            ],
+                        )
+
+                        csv_writer.writeheader()
+
+                        for result in csv_rows:
+                            csv_writer.writerow(
+                                {
+                                    "id": result.get("id", ""),
+                                    "language": result.get("language", ""),
+                                    "domain": result.get("domain", ""),
+                                    "task_type": result.get("task_type", ""),
+                                    "prompt": result.get("prompt", ""),
+                                    "reference_answer": result.get(
+                                        "reference_answer",
+                                        "",
+                                    ),
+                                    "generated_answer": result.get(
+                                        "generated_answer",
+                                        "",
+                                    ),
+                                    "exact_match": result.get(
+                                        "metrics",
+                                        {},
+                                    ).get(
+                                        "exact_match",
+                                        0.0,
+                                    ),
+                                    "word_overlap": result.get(
+                                        "metrics",
+                                        {},
+                                    ).get(
+                                        "word_overlap",
+                                        0.0,
+                                    ),
+                                }
+                            )
+
+                        csv_export = csv_buffer.getvalue()
+
+                        with export_col2:
+                            st.download_button(
+                                "Download CSV",
+                                data=csv_export,
+                                file_name=(
+                                    f"evaluation_"
+                                    f"{response['run_id']}.csv"
+                                ),
+                                mime="text/csv",
+                            )
+
 
                     st.subheader(
                         "Evaluation Results"
