@@ -2,7 +2,7 @@ from typing import Any
 
 
 class ExperimentComparator:
-    """Compare metrics from two evaluation runs."""
+    """Compare evaluation metrics between two experiments."""
 
     @staticmethod
     def compare(
@@ -19,6 +19,18 @@ class ExperimentComparator:
         overlap_a = metrics_a.get("word_overlap", 0.0)
         overlap_b = metrics_b.get("word_overlap", 0.0)
 
+        token_f1_a = metrics_a.get("token_f1", 0.0)
+        token_f1_b = metrics_b.get("token_f1", 0.0)
+
+        character_similarity_a = metrics_a.get(
+            "character_similarity",
+            0.0,
+        )
+        character_similarity_b = metrics_b.get(
+            "character_similarity",
+            0.0,
+        )
+
         length_a = metrics_a.get("length_ratio", 0.0)
         length_b = metrics_b.get("length_ratio", 0.0)
 
@@ -28,20 +40,12 @@ class ExperimentComparator:
                 "dataset": experiment_a.get("dataset"),
                 "provider": experiment_a.get("provider"),
                 "model": experiment_a.get("model"),
-                "temperature": experiment_a.get("temperature", 0.7),
-                "max_tokens": experiment_a.get("max_tokens", 512),
-                "languages": experiment_a.get("languages", []),
-                "task_types": experiment_a.get("task_types", []),
             },
             "experiment_b": {
                 "run_id": experiment_b.get("run_id"),
                 "dataset": experiment_b.get("dataset"),
                 "provider": experiment_b.get("provider"),
                 "model": experiment_b.get("model"),
-                "temperature": experiment_b.get("temperature", 0.7),
-                "max_tokens": experiment_b.get("max_tokens", 512),
-                "languages": experiment_b.get("languages", []),
-                "task_types": experiment_b.get("task_types", []),
             },
             "metrics": {
                 "exact_match": {
@@ -53,6 +57,19 @@ class ExperimentComparator:
                     "experiment_a": overlap_a,
                     "experiment_b": overlap_b,
                     "difference": overlap_b - overlap_a,
+                },
+                "token_f1": {
+                    "experiment_a": token_f1_a,
+                    "experiment_b": token_f1_b,
+                    "difference": token_f1_b - token_f1_a,
+                },
+                "character_similarity": {
+                    "experiment_a": character_similarity_a,
+                    "experiment_b": character_similarity_b,
+                    "difference": (
+                        character_similarity_b
+                        - character_similarity_a
+                    ),
                 },
                 "length_ratio": {
                     "experiment_a": length_a,

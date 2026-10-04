@@ -413,6 +413,8 @@ elif page == "Evaluation Lab":
 
                     col1, col2, col3, col4 = st.columns(4)
 
+                    col1, col2, col3, col4, col5, col6 = st.columns(6)
+
                     with col1:
 
                         st.metric(
@@ -437,6 +439,20 @@ elif page == "Evaluation Lab":
                         )
 
                     with col4:
+
+                        st.metric(
+                            "Token F1",
+                            f"{response['metrics'].get('token_f1', 0.0):.2%}",
+                        )
+
+                    with col5:
+
+                        st.metric(
+                            "Character Similarity",
+                            f"{response['metrics'].get('character_similarity', 0.0):.2%}",
+                        )
+
+                    with col6:
 
                         st.metric(
                             "Length Ratio",
@@ -501,6 +517,8 @@ elif page == "Evaluation Lab":
                                 "reference_word_count",
                                 "exact_match",
                                 "word_overlap",
+                                "token_f1",
+                                "character_similarity",
                                 "length_ratio",
                             ],
                         )
@@ -549,6 +567,20 @@ elif page == "Evaluation Lab":
                                         {},
                                     ).get(
                                         "word_overlap",
+                                        0.0,
+                                    ),
+                                    "token_f1": result.get(
+                                        "metrics",
+                                        {},
+                                    ).get(
+                                        "token_f1",
+                                        0.0,
+                                    ),
+                                    "character_similarity": result.get(
+                                        "metrics",
+                                        {},
+                                    ).get(
+                                        "character_similarity",
                                         0.0,
                                     ),
                                     "length_ratio": result.get(
@@ -604,6 +636,11 @@ elif page == "Evaluation Lab":
                                     "Examples": metrics["examples"],
                                     "Exact Match": metrics["exact_match"],
                                     "Word Overlap": metrics["word_overlap"],
+                                    "Token F1": metrics.get("token_f1", 0.0),
+                                    "Character Similarity": metrics.get(
+                                        "character_similarity",
+                                        0.0,
+                                    ),
                                 }
                             )
 
@@ -617,6 +654,10 @@ elif page == "Evaluation Lab":
                                     "Examples": row["Examples"],
                                     "Exact Match": f"{row['Exact Match']:.2%}",
                                     "Word Overlap": f"{row['Word Overlap']:.2%}",
+                                    "Token F1": f"{row['Token F1']:.2%}",
+                                    "Character Similarity": (
+                                        f"{row['Character Similarity']:.2%}"
+                                    ),
                                 }
                             )
 
@@ -638,6 +679,8 @@ elif page == "Evaluation Lab":
                             [
                                 "Exact Match",
                                 "Word Overlap",
+                                "Token F1",
+                                "Character Similarity",
                             ]
                         ]
 
@@ -678,6 +721,11 @@ elif page == "Evaluation Lab":
                                     "Examples": metrics["examples"],
                                     "Exact Match": metrics["exact_match"],
                                     "Word Overlap": metrics["word_overlap"],
+                                    "Token F1": metrics.get("token_f1", 0.0),
+                                    "Character Similarity": metrics.get(
+                                        "character_similarity",
+                                        0.0,
+                                    ),
                                 }
                             )
 
@@ -691,6 +739,10 @@ elif page == "Evaluation Lab":
                                     "Examples": row["Examples"],
                                     "Exact Match": f"{row['Exact Match']:.2%}",
                                     "Word Overlap": f"{row['Word Overlap']:.2%}",
+                                    "Token F1": f"{row['Token F1']:.2%}",
+                                    "Character Similarity": (
+                                        f"{row['Character Similarity']:.2%}"
+                                    ),
                                 }
                             )
 
@@ -710,6 +762,8 @@ elif page == "Evaluation Lab":
                             [
                                 "Exact Match",
                                 "Word Overlap",
+                                "Token F1",
+                                "Character Similarity",
                             ]
                         ]
 
@@ -750,6 +804,11 @@ elif page == "Evaluation Lab":
                                     "Examples": metrics["examples"],
                                     "Exact Match": metrics["exact_match"],
                                     "Word Overlap": metrics["word_overlap"],
+                                    "Token F1": metrics.get("token_f1", 0.0),
+                                    "Character Similarity": metrics.get(
+                                        "character_similarity",
+                                        0.0,
+                                    ),
                                 }
                             )
 
@@ -763,6 +822,10 @@ elif page == "Evaluation Lab":
                                     "Examples": row["Examples"],
                                     "Exact Match": f"{row['Exact Match']:.2%}",
                                     "Word Overlap": f"{row['Word Overlap']:.2%}",
+                                    "Token F1": f"{row['Token F1']:.2%}",
+                                    "Character Similarity": (
+                                        f"{row['Character Similarity']:.2%}"
+                                    ),
                                 }
                             )
 
@@ -782,6 +845,8 @@ elif page == "Evaluation Lab":
                             [
                                 "Exact Match",
                                 "Word Overlap",
+                                "Token F1",
+                                "Character Similarity",
                             ]
                         ]
 
@@ -832,7 +897,7 @@ elif page == "Evaluation Lab":
                                 result["generated_answer"]
                             )
 
-                            metric_col1, metric_col2, metric_col3, metric_col4, metric_col5 = st.columns(5)
+                            metric_col1, metric_col2, metric_col3, metric_col4, metric_col5, metric_col6, metric_col7 = st.columns(7)
 
                             with metric_col1:
 
@@ -851,6 +916,20 @@ elif page == "Evaluation Lab":
                             with metric_col3:
 
                                 st.metric(
+                                    "Token F1",
+                                    f"{result['metrics'].get('token_f1', 0.0):.2%}",
+                                )
+
+                            with metric_col4:
+
+                                st.metric(
+                                    "Character Similarity",
+                                    f"{result['metrics'].get('character_similarity', 0.0):.2%}",
+                                )
+
+                            with metric_col5:
+
+                                st.metric(
                                     "Generated Words",
                                     result["metrics"].get(
                                         "generated_word_count",
@@ -858,7 +937,7 @@ elif page == "Evaluation Lab":
                                     ),
                                 )
 
-                            with metric_col4:
+                            with metric_col6:
 
                                 st.metric(
                                     "Reference Words",
@@ -868,7 +947,7 @@ elif page == "Evaluation Lab":
                                     ),
                                 )
 
-                            with metric_col5:
+                            with metric_col7:
 
                                 st.metric(
                                     "Length Ratio",
@@ -957,7 +1036,7 @@ elif page == "Experiment History":
                     f"**Max Tokens:** {experiment.get('max_tokens', 512)}"
                 )
 
-                col1, col2 = st.columns(2)
+                col1, col2, col3, col4 = st.columns(4)
 
                 with col1:
 
@@ -971,6 +1050,20 @@ elif page == "Experiment History":
                     st.metric(
                         "Word Overlap",
                         f"{metrics.get('word_overlap', 0.0):.2%}",
+                    )
+
+                with col3:
+
+                    st.metric(
+                        "Token F1",
+                        f"{metrics.get('token_f1', 0.0):.2%}",
+                    )
+
+                with col4:
+
+                    st.metric(
+                        "Character Similarity",
+                        f"{metrics.get('character_similarity', 0.0):.2%}",
                     )
 
 
@@ -1105,6 +1198,16 @@ elif page == "Compare Experiments":
                     {},
                 )
 
+                token_f1 = metrics.get(
+                    "token_f1",
+                    {},
+                )
+
+                character_similarity = metrics.get(
+                    "character_similarity",
+                    {},
+                )
+
                 length = metrics.get(
                     "length_ratio",
                     {},
@@ -1168,6 +1271,62 @@ elif page == "Compare Experiments":
 
 
                 st.write(
+                    "### Token F1"
+                )
+
+                col1, col2, col3 = st.columns(3)
+
+                with col1:
+
+                    st.metric(
+                        "Experiment A",
+                        f"{token_f1.get('experiment_a', 0.0):.2%}",
+                    )
+
+                with col2:
+
+                    st.metric(
+                        "Experiment B",
+                        f"{token_f1.get('experiment_b', 0.0):.2%}",
+                    )
+
+                with col3:
+
+                    st.metric(
+                        "Difference",
+                        f"{token_f1.get('difference', 0.0):+.2%}",
+                    )
+
+
+                st.write(
+                    "### Character Similarity"
+                )
+
+                col1, col2, col3 = st.columns(3)
+
+                with col1:
+
+                    st.metric(
+                        "Experiment A",
+                        f"{character_similarity.get('experiment_a', 0.0):.2%}",
+                    )
+
+                with col2:
+
+                    st.metric(
+                        "Experiment B",
+                        f"{character_similarity.get('experiment_b', 0.0):.2%}",
+                    )
+
+                with col3:
+
+                    st.metric(
+                        "Difference",
+                        f"{character_similarity.get('difference', 0.0):+.2%}",
+                    )
+
+
+                st.write(
                     "### Length Ratio"
                 )
 
@@ -1203,17 +1362,26 @@ elif page == "Compare Experiments":
                     "Metric": [
                         "Exact Match",
                         "Word Overlap",
-                        "Length Ratio",
+                        "Token F1",
+                        "Character Similarity",
                     ],
                     "Experiment A": [
                         exact.get("experiment_a", 0.0),
                         overlap.get("experiment_a", 0.0),
-                        length.get("experiment_a", 0.0),
+                        token_f1.get("experiment_a", 0.0),
+                        character_similarity.get(
+                            "experiment_a",
+                            0.0,
+                        ),
                     ],
                     "Experiment B": [
                         exact.get("experiment_b", 0.0),
                         overlap.get("experiment_b", 0.0),
-                        length.get("experiment_b", 0.0),
+                        token_f1.get("experiment_b", 0.0),
+                        character_similarity.get(
+                            "experiment_b",
+                            0.0,
+                        ),
                     ],
                 }
 

@@ -6,6 +6,8 @@ from app.providers.base import NAtlasProvider
 from app.services.metrics import (
     exact_match_score,
     word_overlap_score,
+    token_f1_score,
+    character_similarity_score,
     word_count,
     length_ratio,
 )
@@ -46,6 +48,8 @@ class EvaluationEngine:
 
         exact_match_total = 0.0
         word_overlap_total = 0.0
+        token_f1_total = 0.0
+        character_similarity_total = 0.0
         length_ratio_total = 0.0
 
         language_metrics = defaultdict(
@@ -53,6 +57,8 @@ class EvaluationEngine:
                 "examples": 0,
                 "exact_match_total": 0.0,
                 "word_overlap_total": 0.0,
+                "token_f1_total": 0.0,
+                "character_similarity_total": 0.0,
                 "length_ratio_total": 0.0,
             }
         )
@@ -62,6 +68,8 @@ class EvaluationEngine:
                 "examples": 0,
                 "exact_match_total": 0.0,
                 "word_overlap_total": 0.0,
+                "token_f1_total": 0.0,
+                "character_similarity_total": 0.0,
                 "length_ratio_total": 0.0,
             }
         )
@@ -71,6 +79,8 @@ class EvaluationEngine:
                 "examples": 0,
                 "exact_match_total": 0.0,
                 "word_overlap_total": 0.0,
+                "token_f1_total": 0.0,
+                "character_similarity_total": 0.0,
                 "length_ratio_total": 0.0,
             }
         )
@@ -93,6 +103,16 @@ class EvaluationEngine:
                 example.reference_answer,
             )
 
+            token_f1 = token_f1_score(
+                generated_answer,
+                example.reference_answer,
+            )
+
+            character_similarity = character_similarity_score(
+                generated_answer,
+                example.reference_answer,
+            )
+
             generated_word_count = word_count(
                 generated_answer
             )
@@ -108,6 +128,8 @@ class EvaluationEngine:
 
             exact_match_total += exact_match
             word_overlap_total += word_overlap
+            token_f1_total += token_f1
+            character_similarity_total += character_similarity
             length_ratio_total += answer_length_ratio
 
             # -----------------------------------------
@@ -125,6 +147,14 @@ class EvaluationEngine:
             language_metrics[language][
                 "word_overlap_total"
             ] += word_overlap
+
+            language_metrics[language][
+                "token_f1_total"
+            ] += token_f1
+
+            language_metrics[language][
+                "character_similarity_total"
+            ] += character_similarity
 
             language_metrics[language][
                 "length_ratio_total"
@@ -147,6 +177,14 @@ class EvaluationEngine:
             ] += word_overlap
 
             domain_metrics[domain][
+                "token_f1_total"
+            ] += token_f1
+
+            domain_metrics[domain][
+                "character_similarity_total"
+            ] += character_similarity
+
+            domain_metrics[domain][
                 "length_ratio_total"
             ] += answer_length_ratio
 
@@ -165,6 +203,14 @@ class EvaluationEngine:
             task_metrics[task_type][
                 "word_overlap_total"
             ] += word_overlap
+
+            task_metrics[task_type][
+                "token_f1_total"
+            ] += token_f1
+
+            task_metrics[task_type][
+                "character_similarity_total"
+            ] += character_similarity
 
             task_metrics[task_type][
                 "length_ratio_total"
@@ -186,6 +232,8 @@ class EvaluationEngine:
                     "metrics": {
                         "exact_match": exact_match,
                         "word_overlap": word_overlap,
+                        "token_f1": token_f1,
+                        "character_similarity": character_similarity,
                         "generated_word_count": generated_word_count,
                         "reference_word_count": reference_word_count,
                         "length_ratio": answer_length_ratio,
@@ -204,6 +252,14 @@ class EvaluationEngine:
                 word_overlap_total / total
             )
 
+            average_token_f1 = (
+                token_f1_total / total
+            )
+
+            average_character_similarity = (
+                character_similarity_total / total
+            )
+
             average_length_ratio = (
                 length_ratio_total / total
             )
@@ -211,6 +267,8 @@ class EvaluationEngine:
         else:
             average_exact_match = 0.0
             average_word_overlap = 0.0
+            average_token_f1 = 0.0
+            average_character_similarity = 0.0
             average_length_ratio = 0.0
 
         # -----------------------------------------
@@ -232,6 +290,17 @@ class EvaluationEngine:
                 ),
                 "word_overlap": (
                     metrics["word_overlap_total"] / count
+                    if count
+                    else 0.0
+                ),
+                "token_f1": (
+                    metrics["token_f1_total"] / count
+                    if count
+                    else 0.0
+                ),
+                "character_similarity": (
+                    metrics["character_similarity_total"]
+                    / count
                     if count
                     else 0.0
                 ),
@@ -264,6 +333,17 @@ class EvaluationEngine:
                     if count
                     else 0.0
                 ),
+                "token_f1": (
+                    metrics["token_f1_total"] / count
+                    if count
+                    else 0.0
+                ),
+                "character_similarity": (
+                    metrics["character_similarity_total"]
+                    / count
+                    if count
+                    else 0.0
+                ),
                 "length_ratio": (
                     metrics["length_ratio_total"] / count
                     if count
@@ -293,6 +373,17 @@ class EvaluationEngine:
                     if count
                     else 0.0
                 ),
+                "token_f1": (
+                    metrics["token_f1_total"] / count
+                    if count
+                    else 0.0
+                ),
+                "character_similarity": (
+                    metrics["character_similarity_total"]
+                    / count
+                    if count
+                    else 0.0
+                ),
                 "length_ratio": (
                     metrics["length_ratio_total"] / count
                     if count
@@ -310,6 +401,8 @@ class EvaluationEngine:
             "metrics": {
                 "exact_match": average_exact_match,
                 "word_overlap": average_word_overlap,
+                "token_f1": average_token_f1,
+                "character_similarity": average_character_similarity,
                 "length_ratio": average_length_ratio,
             },
             "by_language": by_language,
