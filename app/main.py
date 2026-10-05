@@ -83,6 +83,30 @@ def list_datasets():
     }
 
 
+@app.get("/experiments")
+def list_experiments():
+    store = ExperimentStore()
+
+    return {
+        "experiments": store.list()
+    }
+
+
+@app.get("/experiments/{run_id}")
+def get_experiment(run_id: str):
+    store = ExperimentStore()
+
+    experiment = store.get(run_id)
+
+    if experiment is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Experiment not found: {run_id}",
+        )
+
+    return experiment
+
+
 @app.post("/evaluate")
 def evaluate(request: EvaluateRequest):
     dataset = DatasetLoader.load_jsonl(
@@ -111,39 +135,20 @@ def compare_experiments(
 ):
     store = ExperimentStore()
 
-    experiment_a_path = (
-        store.directory / f"{run_id_a}.json"
-    )
+    experiment_a = store.get(run_id_a)
+    experiment_b = store.get(run_id_b)
 
-    experiment_b_path = (
-        store.directory / f"{run_id_b}.json"
-    )
-
-    if not experiment_a_path.exists():
+    if experiment_a is None:
         raise HTTPException(
             status_code=404,
             detail=f"Experiment not found: {run_id_a}",
         )
 
-    if not experiment_b_path.exists():
+    if experiment_b is None:
         raise HTTPException(
             status_code=404,
             detail=f"Experiment not found: {run_id_b}",
         )
-
-    import json
-
-    with experiment_a_path.open(
-        "r",
-        encoding="utf-8",
-    ) as file:
-        experiment_a = json.load(file)
-
-    with experiment_b_path.open(
-        "r",
-        encoding="utf-8",
-    ) as file:
-        experiment_b = json.load(file)
 
     return ExperimentComparator.compare(
         experiment_a,

@@ -28,7 +28,10 @@ class ExperimentStore:
 
         file_path = self.directory / f"{run_id}.json"
 
-        with file_path.open("w", encoding="utf-8") as file:
+        with file_path.open(
+            "w",
+            encoding="utf-8",
+        ) as file:
             json.dump(
                 experiment,
                 file,
@@ -37,3 +40,43 @@ class ExperimentStore:
             )
 
         return experiment
+
+    def list(self) -> list[dict]:
+        """Return saved experiments, newest first."""
+
+        experiments = []
+
+        for path in sorted(
+            self.directory.glob("*.json"),
+            key=lambda item: item.stat().st_mtime,
+            reverse=True,
+        ):
+            try:
+                with path.open(
+                    "r",
+                    encoding="utf-8",
+                ) as file:
+                    experiments.append(
+                        json.load(file)
+                    )
+            except (OSError, json.JSONDecodeError):
+                continue
+
+        return experiments
+
+    def get(self, run_id: str) -> dict | None:
+        """Return a saved experiment by run ID."""
+
+        file_path = self.directory / f"{run_id}.json"
+
+        if not file_path.exists():
+            return None
+
+        try:
+            with file_path.open(
+                "r",
+                encoding="utf-8",
+            ) as file:
+                return json.load(file)
+        except (OSError, json.JSONDecodeError):
+            return None

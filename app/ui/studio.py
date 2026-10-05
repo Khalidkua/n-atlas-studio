@@ -1,13 +1,9 @@
 import json
-from pathlib import Path
-
 import requests
 import streamlit as st
 
 
 API_URL = "http://127.0.0.1:8000"
-EXPERIMENTS_DIR = Path("experiments")
-
 
 def api_request(
     method: str,
@@ -29,29 +25,20 @@ def api_request(
 
 
 def load_experiments():
-    experiments = []
+    """Load saved experiments through the FastAPI backend."""
 
-    EXPERIMENTS_DIR.mkdir(
-        parents=True,
-        exist_ok=True,
-    )
+    try:
+        data = api_request(
+            "GET",
+            "/experiments",
+        )
 
-    for path in sorted(
-        EXPERIMENTS_DIR.glob("*.json"),
-        reverse=True,
-    ):
-        try:
-            with path.open(
-                "r",
-                encoding="utf-8",
-            ) as file:
-                experiments.append(
-                    json.load(file)
-                )
-        except Exception:
-            continue
-
-    return experiments
+        return data.get(
+            "experiments",
+            [],
+        )
+    except requests.RequestException:
+        return []
 
 
 st.set_page_config(
