@@ -12,9 +12,11 @@ class GradioNAtlasProvider(NAtlasProvider):
         self,
         space: str = "seun-ajayi/n-atlas-evaluations",
         model_key: str = "N-ATLaS-LLM",
+        model_name: str = "NCAIR1/N-ATLaS",
     ):
         self.space = space
         self.model_key = model_key
+        self.model_name = model_name
         self.client = Client(space)
 
     def generate(self, prompt: str, **kwargs: Any) -> str:
@@ -51,7 +53,8 @@ class GradioNAtlasProvider(NAtlasProvider):
     def health(self) -> dict[str, Any]:
         return {
             "provider": "gradio",
-            "model": self.model_key,
+            "model": self.model_name,
+            "model_key": self.model_key,
             "status": "configured",
             "space": self.space,
         }

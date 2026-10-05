@@ -26,6 +26,7 @@ def create_provider() -> NAtlasProvider:
         return GradioNAtlasProvider(
             space=settings.gradio_space,
             model_key=settings.gradio_model_key,
+            model_name=settings.model_name,
         )
 
     raise ValueError(

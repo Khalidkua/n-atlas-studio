@@ -32,3 +32,40 @@ def test_remote_provider_factory(monkeypatch):
     assert provider.api_url == "http://localhost:9000/generate"
     assert provider.api_key == "test-key"
     assert provider.model_name == settings.model_name
+
+def test_gradio_provider_factory_passes_model_configuration(monkeypatch):
+    monkeypatch.setattr(settings, "provider", "gradio")
+    monkeypatch.setattr(
+        settings,
+        "gradio_space",
+        "test-space",
+    )
+    monkeypatch.setattr(
+        settings,
+        "gradio_model_key",
+        "N-ATLaS-LLM",
+    )
+    monkeypatch.setattr(
+        settings,
+        "model_name",
+        "NCAIR1/N-ATLaS",
+    )
+
+    captured = {}
+
+    class FakeGradioProvider:
+        def __init__(self, **kwargs):
+            captured.update(kwargs)
+
+    monkeypatch.setattr(
+        "app.providers.factory.GradioNAtlasProvider",
+        FakeGradioProvider,
+    )
+
+    provider = create_provider()
+
+    assert isinstance(provider, FakeGradioProvider)
+    assert captured["space"] == "test-space"
+    assert captured["model_key"] == "N-ATLaS-LLM"
+    assert captured["model_name"] == "NCAIR1/N-ATLaS"
+
