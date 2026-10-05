@@ -8,6 +8,7 @@ API_URL = "http://127.0.0.1:8000"
 def api_request(
     method: str,
     endpoint: str,
+    timeout: int = 60,
     **kwargs,
 ):
     url = f"{API_URL}{endpoint}"
@@ -15,7 +16,7 @@ def api_request(
     response = requests.request(
         method,
         url,
-        timeout=60,
+        timeout=timeout,
         **kwargs,
     )
 
@@ -379,6 +380,7 @@ elif page == "Evaluation Lab":
                     response = api_request(
                         "POST",
                         "/evaluate",
+                        timeout=300,
                        json={
     "dataset_path": selected_info[
         "path"
