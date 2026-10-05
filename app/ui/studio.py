@@ -411,9 +411,7 @@ elif page == "Evaluation Lab":
                         "Evaluation Summary"
                     )
 
-                    col1, col2, col3, col4 = st.columns(4)
-
-                    col1, col2, col3, col4, col5, col6 = st.columns(6)
+                    col1, col2, col3, col4, col5, col6, col7 = st.columns(7)
 
                     with col1:
 
@@ -457,6 +455,13 @@ elif page == "Evaluation Lab":
                         st.metric(
                             "Length Ratio",
                             f"{response['metrics'].get('length_ratio', 0.0):.2f}x",
+                        )
+
+                    with col7:
+
+                        st.metric(
+                            "Response Language",
+                            f"{response['metrics'].get('response_language_accuracy', 0.0):.2%}",
                         )
 
 
@@ -520,6 +525,10 @@ elif page == "Evaluation Lab":
                                 "token_f1",
                                 "character_similarity",
                                 "length_ratio",
+                                "expected_response_language",
+                                "detected_language",
+                                "language_match",
+                                "language_detection_confidence",
                             ],
                         )
 
@@ -590,6 +599,22 @@ elif page == "Evaluation Lab":
                                         "length_ratio",
                                         0.0,
                                     ),
+                                    "expected_response_language": result.get(
+                                        "expected_response_language",
+                                        "",
+                                    ),
+                                    "detected_language": result.get(
+                                        "detected_language",
+                                        "",
+                                    ),
+                                    "language_match": result.get(
+                                        "language_match",
+                                        "",
+                                    ),
+                                    "language_detection_confidence": result.get(
+                                        "language_detection_confidence",
+                                        0.0,
+                                    ),
                                 }
                             )
 
@@ -641,6 +666,10 @@ elif page == "Evaluation Lab":
                                         "character_similarity",
                                         0.0,
                                     ),
+                                    "Response Language": metrics.get(
+                                        "response_language_accuracy",
+                                        0.0,
+                                    ),
                                 }
                             )
 
@@ -657,6 +686,9 @@ elif page == "Evaluation Lab":
                                     "Token F1": f"{row['Token F1']:.2%}",
                                     "Character Similarity": (
                                         f"{row['Character Similarity']:.2%}"
+                                    ),
+                                    "Response Language": (
+                                        f"{row['Response Language']:.2%}"
                                     ),
                                 }
                             )
@@ -681,6 +713,7 @@ elif page == "Evaluation Lab":
                                 "Word Overlap",
                                 "Token F1",
                                 "Character Similarity",
+                                "Response Language",
                             ]
                         ]
 
@@ -726,6 +759,10 @@ elif page == "Evaluation Lab":
                                         "character_similarity",
                                         0.0,
                                     ),
+                                    "Response Language": metrics.get(
+                                        "response_language_accuracy",
+                                        0.0,
+                                    ),
                                 }
                             )
 
@@ -742,6 +779,9 @@ elif page == "Evaluation Lab":
                                     "Token F1": f"{row['Token F1']:.2%}",
                                     "Character Similarity": (
                                         f"{row['Character Similarity']:.2%}"
+                                    ),
+                                    "Response Language": (
+                                        f"{row['Response Language']:.2%}"
                                     ),
                                 }
                             )
@@ -764,6 +804,7 @@ elif page == "Evaluation Lab":
                                 "Word Overlap",
                                 "Token F1",
                                 "Character Similarity",
+                                "Response Language",
                             ]
                         ]
 
@@ -809,6 +850,10 @@ elif page == "Evaluation Lab":
                                         "character_similarity",
                                         0.0,
                                     ),
+                                    "Response Language": metrics.get(
+                                        "response_language_accuracy",
+                                        0.0,
+                                    ),
                                 }
                             )
 
@@ -825,6 +870,9 @@ elif page == "Evaluation Lab":
                                     "Token F1": f"{row['Token F1']:.2%}",
                                     "Character Similarity": (
                                         f"{row['Character Similarity']:.2%}"
+                                    ),
+                                    "Response Language": (
+                                        f"{row['Response Language']:.2%}"
                                     ),
                                 }
                             )
@@ -847,6 +895,7 @@ elif page == "Evaluation Lab":
                                 "Word Overlap",
                                 "Token F1",
                                 "Character Similarity",
+                                "Response Language",
                             ]
                         ]
 
@@ -954,6 +1003,56 @@ elif page == "Evaluation Lab":
                                     f"{result['metrics'].get('length_ratio', 0.0):.2f}x",
                                 )
 
+                            st.markdown(
+                                "#### Response Language"
+                            )
+
+                            language_col1, language_col2, language_col3, language_col4 = st.columns(4)
+
+                            with language_col1:
+
+                                st.metric(
+                                    "Expected",
+                                    result.get(
+                                        "expected_response_language",
+                                        "unknown",
+                                    ),
+                                )
+
+                            with language_col2:
+
+                                st.metric(
+                                    "Detected",
+                                    result.get(
+                                        "detected_language",
+                                        "unknown",
+                                    ),
+                                )
+
+                            with language_col3:
+
+                                language_match = result.get(
+                                    "language_match"
+                                )
+
+                                st.metric(
+                                    "Match",
+                                    (
+                                        "Yes"
+                                        if language_match is True
+                                        else "No"
+                                        if language_match is False
+                                        else "Unknown"
+                                    ),
+                                )
+
+                            with language_col4:
+
+                                st.metric(
+                                    "Confidence",
+                                    f"{result.get('language_detection_confidence', 0.0):.2%}",
+                                )
+
                 except Exception as exc:
 
                     st.error(
@@ -1036,7 +1135,7 @@ elif page == "Experiment History":
                     f"**Max Tokens:** {experiment.get('max_tokens', 512)}"
                 )
 
-                col1, col2, col3, col4 = st.columns(4)
+                col1, col2, col3, col4, col5 = st.columns(5)
 
                 with col1:
 
@@ -1064,6 +1163,13 @@ elif page == "Experiment History":
                     st.metric(
                         "Character Similarity",
                         f"{metrics.get('character_similarity', 0.0):.2%}",
+                    )
+
+                with col5:
+
+                    st.metric(
+                        "Response Language",
+                        f"{metrics.get('response_language_accuracy', 0.0):.2%}",
                     )
 
 
@@ -1213,6 +1319,11 @@ elif page == "Compare Experiments":
                     {},
                 )
 
+                response_language = metrics.get(
+                    "response_language_accuracy",
+                    {},
+                )
+
                 st.write(
                     "### Exact Match"
                 )
@@ -1355,6 +1466,34 @@ elif page == "Compare Experiments":
 
 
                 st.write(
+                    "### Response Language"
+                )
+
+                col1, col2, col3 = st.columns(3)
+
+                with col1:
+
+                    st.metric(
+                        "Experiment A",
+                        f"{response_language.get('experiment_a', 0.0):.2%}",
+                    )
+
+                with col2:
+
+                    st.metric(
+                        "Experiment B",
+                        f"{response_language.get('experiment_b', 0.0):.2%}",
+                    )
+
+                with col3:
+
+                    st.metric(
+                        "Difference",
+                        f"{response_language.get('difference', 0.0):+.2%}",
+                    )
+
+
+                st.write(
                     "### Metric Comparison"
                 )
 
@@ -1364,6 +1503,7 @@ elif page == "Compare Experiments":
                         "Word Overlap",
                         "Token F1",
                         "Character Similarity",
+                        "Response Language",
                     ],
                     "Experiment A": [
                         exact.get("experiment_a", 0.0),
@@ -1373,12 +1513,20 @@ elif page == "Compare Experiments":
                             "experiment_a",
                             0.0,
                         ),
+                        response_language.get(
+                            "experiment_a",
+                            0.0,
+                        ),
                     ],
                     "Experiment B": [
                         exact.get("experiment_b", 0.0),
                         overlap.get("experiment_b", 0.0),
                         token_f1.get("experiment_b", 0.0),
                         character_similarity.get(
+                            "experiment_b",
+                            0.0,
+                        ),
+                        response_language.get(
                             "experiment_b",
                             0.0,
                         ),

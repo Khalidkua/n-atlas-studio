@@ -34,6 +34,15 @@ class ExperimentComparator:
         length_a = metrics_a.get("length_ratio", 0.0)
         length_b = metrics_b.get("length_ratio", 0.0)
 
+        response_language_a = metrics_a.get(
+            "response_language_accuracy",
+            0.0,
+        )
+        response_language_b = metrics_b.get(
+            "response_language_accuracy",
+            0.0,
+        )
+
         return {
             "experiment_a": {
                 "run_id": experiment_a.get("run_id"),
@@ -75,6 +84,14 @@ class ExperimentComparator:
                     "experiment_a": length_a,
                     "experiment_b": length_b,
                     "difference": length_b - length_a,
+                },
+                "response_language_accuracy": {
+                    "experiment_a": response_language_a,
+                    "experiment_b": response_language_b,
+                    "difference": (
+                        response_language_b
+                        - response_language_a
+                    ),
                 },
             },
         }
