@@ -34,4 +34,4 @@ Thumbs.db
 # Model/cache files
 .cache/
 huggingface_cache/
-models/
+/models/
