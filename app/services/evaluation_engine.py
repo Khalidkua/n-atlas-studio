@@ -1,8 +1,10 @@
 from collections import defaultdict
+import re
 from typing import Any
 
 from app.models.evaluation import EvaluationDataset
 from app.providers.base import NAtlasProvider
+from app.services.language_detector import LanguageDetector
 from app.services.metrics import (
     exact_match_score,
     word_overlap_score,
@@ -18,6 +20,80 @@ class EvaluationEngine:
 
     def __init__(self, provider: NAtlasProvider):
         self.provider = provider
+        self.language_detector = LanguageDetector()
+
+    @staticmethod
+    def _expected_response_language(example: Any) -> str:
+        """Determine the language expected in the generated response."""
+
+        if example.task_type == "translation":
+            match = re.search(
+                r"Translate to (Hausa|English|Igbo|Yoruba):",
+                example.prompt,
+                re.IGNORECASE,
+            )
+
+            if match:
+                return match.group(1).capitalize()
+
+        return example.language
+
+    @staticmethod
+    def _create_metric_bucket() -> dict[str, float | int]:
+        return {
+            "examples": 0,
+            "exact_match_total": 0.0,
+            "word_overlap_total": 0.0,
+            "token_f1_total": 0.0,
+            "character_similarity_total": 0.0,
+            "length_ratio_total": 0.0,
+            "language_known_examples": 0,
+            "language_match_total": 0.0,
+        }
+
+    @staticmethod
+    def _finalize_metrics(
+        metrics: dict[str, float | int],
+    ) -> dict[str, float | int]:
+        count = int(metrics["examples"])
+        language_known = int(metrics["language_known_examples"])
+
+        return {
+            "examples": count,
+            "exact_match": (
+                float(metrics["exact_match_total"]) / count
+                if count
+                else 0.0
+            ),
+            "word_overlap": (
+                float(metrics["word_overlap_total"]) / count
+                if count
+                else 0.0
+            ),
+            "token_f1": (
+                float(metrics["token_f1_total"]) / count
+                if count
+                else 0.0
+            ),
+            "character_similarity": (
+                float(metrics["character_similarity_total"])
+                / count
+                if count
+                else 0.0
+            ),
+            "length_ratio": (
+                float(metrics["length_ratio_total"]) / count
+                if count
+                else 0.0
+            ),
+            "language_known_examples": language_known,
+            "response_language_accuracy": (
+                float(metrics["language_match_total"])
+                / language_known
+                if language_known
+                else 0.0
+            ),
+        }
 
     def evaluate(
         self,
@@ -52,37 +128,19 @@ class EvaluationEngine:
         character_similarity_total = 0.0
         length_ratio_total = 0.0
 
+        language_known_total = 0
+        language_match_total = 0.0
+
         language_metrics = defaultdict(
-            lambda: {
-                "examples": 0,
-                "exact_match_total": 0.0,
-                "word_overlap_total": 0.0,
-                "token_f1_total": 0.0,
-                "character_similarity_total": 0.0,
-                "length_ratio_total": 0.0,
-            }
+            self._create_metric_bucket
         )
 
         domain_metrics = defaultdict(
-            lambda: {
-                "examples": 0,
-                "exact_match_total": 0.0,
-                "word_overlap_total": 0.0,
-                "token_f1_total": 0.0,
-                "character_similarity_total": 0.0,
-                "length_ratio_total": 0.0,
-            }
+            self._create_metric_bucket
         )
 
         task_metrics = defaultdict(
-            lambda: {
-                "examples": 0,
-                "exact_match_total": 0.0,
-                "word_overlap_total": 0.0,
-                "token_f1_total": 0.0,
-                "character_similarity_total": 0.0,
-                "length_ratio_total": 0.0,
-            }
+            self._create_metric_bucket
         )
 
         for example in filtered_examples:
@@ -126,11 +184,46 @@ class EvaluationEngine:
                 example.reference_answer,
             )
 
+            # -----------------------------------------
+            # Response-language evaluation
+            # -----------------------------------------
+
+            expected_response_language = (
+                self._expected_response_language(example)
+            )
+
+            language_detection = self.language_detector.detect(
+                generated_answer
+            )
+
+            detected_language = language_detection["language"]
+            language_detection_confidence = (
+                language_detection["confidence"]
+            )
+
+            language_match = (
+                detected_language != "unknown"
+                and detected_language.lower()
+                == expected_response_language.lower()
+            )
+
+            language_is_known = detected_language != "unknown"
+
+            # -----------------------------------------
+            # Overall metrics
+            # -----------------------------------------
+
             exact_match_total += exact_match
             word_overlap_total += word_overlap
             token_f1_total += token_f1
             character_similarity_total += character_similarity
             length_ratio_total += answer_length_ratio
+
+            if language_is_known:
+                language_known_total += 1
+
+                if language_match:
+                    language_match_total += 1
 
             # -----------------------------------------
             # Language metrics
@@ -160,6 +253,16 @@ class EvaluationEngine:
                 "length_ratio_total"
             ] += answer_length_ratio
 
+            if language_is_known:
+                language_metrics[language][
+                    "language_known_examples"
+                ] += 1
+
+                if language_match:
+                    language_metrics[language][
+                        "language_match_total"
+                    ] += 1
+
             # -----------------------------------------
             # Domain metrics
             # -----------------------------------------
@@ -187,6 +290,16 @@ class EvaluationEngine:
             domain_metrics[domain][
                 "length_ratio_total"
             ] += answer_length_ratio
+
+            if language_is_known:
+                domain_metrics[domain][
+                    "language_known_examples"
+                ] += 1
+
+                if language_match:
+                    domain_metrics[domain][
+                        "language_match_total"
+                    ] += 1
 
             # -----------------------------------------
             # Task type metrics
@@ -216,6 +329,16 @@ class EvaluationEngine:
                 "length_ratio_total"
             ] += answer_length_ratio
 
+            if language_is_known:
+                task_metrics[task_type][
+                    "language_known_examples"
+                ] += 1
+
+                if language_match:
+                    task_metrics[task_type][
+                        "language_match_total"
+                    ] += 1
+
             # -----------------------------------------
             # Individual result
             # -----------------------------------------
@@ -229,6 +352,14 @@ class EvaluationEngine:
                     "prompt": example.prompt,
                     "reference_answer": example.reference_answer,
                     "generated_answer": generated_answer,
+                    "expected_response_language": (
+                        expected_response_language
+                    ),
+                    "detected_language": detected_language,
+                    "language_match": language_match,
+                    "language_detection_confidence": (
+                        language_detection_confidence
+                    ),
                     "metrics": {
                         "exact_match": exact_match,
                         "word_overlap": word_overlap,
@@ -275,121 +406,34 @@ class EvaluationEngine:
         # Final language metrics
         # -----------------------------------------
 
-        by_language = {}
-
-        for language, metrics in language_metrics.items():
-
-            count = metrics["examples"]
-
-            by_language[language] = {
-                "examples": count,
-                "exact_match": (
-                    metrics["exact_match_total"] / count
-                    if count
-                    else 0.0
-                ),
-                "word_overlap": (
-                    metrics["word_overlap_total"] / count
-                    if count
-                    else 0.0
-                ),
-                "token_f1": (
-                    metrics["token_f1_total"] / count
-                    if count
-                    else 0.0
-                ),
-                "character_similarity": (
-                    metrics["character_similarity_total"]
-                    / count
-                    if count
-                    else 0.0
-                ),
-                "length_ratio": (
-                    metrics["length_ratio_total"] / count
-                    if count
-                    else 0.0
-                ),
-            }
+        by_language = {
+            language: self._finalize_metrics(metrics)
+            for language, metrics in language_metrics.items()
+        }
 
         # -----------------------------------------
         # Final task type metrics
         # -----------------------------------------
 
-        by_task_type = {}
-
-        for task_type, metrics in task_metrics.items():
-
-            count = metrics["examples"]
-
-            by_task_type[task_type] = {
-                "examples": count,
-                "exact_match": (
-                    metrics["exact_match_total"] / count
-                    if count
-                    else 0.0
-                ),
-                "word_overlap": (
-                    metrics["word_overlap_total"] / count
-                    if count
-                    else 0.0
-                ),
-                "token_f1": (
-                    metrics["token_f1_total"] / count
-                    if count
-                    else 0.0
-                ),
-                "character_similarity": (
-                    metrics["character_similarity_total"]
-                    / count
-                    if count
-                    else 0.0
-                ),
-                "length_ratio": (
-                    metrics["length_ratio_total"] / count
-                    if count
-                    else 0.0
-                ),
-            }
+        by_task_type = {
+            task_type: self._finalize_metrics(metrics)
+            for task_type, metrics in task_metrics.items()
+        }
 
         # -----------------------------------------
         # Final domain metrics
         # -----------------------------------------
 
-        by_domain = {}
+        by_domain = {
+            domain: self._finalize_metrics(metrics)
+            for domain, metrics in domain_metrics.items()
+        }
 
-        for domain, metrics in domain_metrics.items():
-
-            count = metrics["examples"]
-
-            by_domain[domain] = {
-                "examples": count,
-                "exact_match": (
-                    metrics["exact_match_total"] / count
-                    if count
-                    else 0.0
-                ),
-                "word_overlap": (
-                    metrics["word_overlap_total"] / count
-                    if count
-                    else 0.0
-                ),
-                "token_f1": (
-                    metrics["token_f1_total"] / count
-                    if count
-                    else 0.0
-                ),
-                "character_similarity": (
-                    metrics["character_similarity_total"]
-                    / count
-                    if count
-                    else 0.0
-                ),
-                "length_ratio": (
-                    metrics["length_ratio_total"] / count
-                    if count
-                    else 0.0
-                ),
-            }
+        response_language_accuracy = (
+            language_match_total / language_known_total
+            if language_known_total
+            else 0.0
+        )
 
         return {
             "dataset": dataset.name,
@@ -404,6 +448,10 @@ class EvaluationEngine:
                 "token_f1": average_token_f1,
                 "character_similarity": average_character_similarity,
                 "length_ratio": average_length_ratio,
+                "response_language_accuracy": (
+                    response_language_accuracy
+                ),
+                "language_known_examples": language_known_total,
             },
             "by_language": by_language,
             "by_task_type": by_task_type,
