@@ -23,7 +23,4 @@ services:
     startCommand: streamlit run app/ui/studio.py --server.address 0.0.0.0 --server.port $PORT
     envVars:
       - key: API_URL
-        fromService:
-          type: web
-          name: n-atlas-studio-api
-          property: hostport
+        value: https://n-atlas-studio-api.onrender.com
