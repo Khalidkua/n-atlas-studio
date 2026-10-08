@@ -46,3 +46,4 @@ websockets==16.1.1
 
 # Development and testing
 pytest==9.1.1
+gradio-client==2.7.2
